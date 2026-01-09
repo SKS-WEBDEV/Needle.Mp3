@@ -276,7 +276,6 @@ export default function FullScreenPlayer({ isOpen, onClose }) {
                                                     <span key={Math.ceil(timeToNext)} className="countdown-number">
                                                         {Math.ceil(timeToNext)}
                                                     </span>
-                                                    /*<span className="countdown-label">Next Line...</span>*/
                                                 </div>
                                             );
                                         }
@@ -296,3 +295,4 @@ export default function FullScreenPlayer({ isOpen, onClose }) {
         </div>
     );
 }
+
