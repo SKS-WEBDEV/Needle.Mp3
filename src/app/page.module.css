@@ -139,3 +139,41 @@ a.secondary {
     --button-secondary-border: #1a1a1a;
   }
 }
+
+.mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+}
+
+.mobile-brand-logo {
+    height: 40px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+}
+
+/* Smaller devices */
+@media (max-width: 480px) {
+    .mobile-brand-logo {
+        height: 32px;
+        max-width: 110px;
+    }
+}
+
+/* Tablets */
+@media (min-width: 768px) {
+    .mobile-brand-logo {
+        height: 45px;
+        max-width: 160px;
+    }
+}
+
+/* Large screens */
+@media (min-width: 1024px) {
+    .mobile-brand-logo {
+        height: 50px;
+        max-width: 180px;
+    }
+}
