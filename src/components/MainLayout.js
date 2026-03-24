@@ -33,6 +33,7 @@ export default function MainLayout({ children }) {
                 src="https://res.cloudinary.com/dgwrti2qs/image/upload/v1774345919/2026-03-24-NEEDLE-MP3_fttq1y.gif"
                 alt="Needle Logo"
                 className="mobile-brand-logo"
+                style="width: 90px;"
                 />
             </div>
 
