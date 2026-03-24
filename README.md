@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎧 Needle MP3
 
-## Getting Started
+![GitHub Repo
+stars](https://img.shields.io/github/stars/your-username/needle-mp3?style=social)
+![GitHub
+forks](https://img.shields.io/github/forks/your-username/needle-mp3?style=social)
+![License](https://img.shields.io/github/license/your-username/needle-mp3)
+![Vercel](https://img.shields.io/badge/Deployed-Vercel-black)
 
-First, run the development server:
+------------------------------------------------------------------------
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Live Demo
+
+👉 https://needlemp3.vercel.app/
+
+------------------------------------------------------------------------
+
+## ✨ Overview
+
+Needle MP3 is a lightweight, fast, and modern music streaming web
+application that allows users to search, discover, and play songs
+instantly using external APIs.
+
+------------------------------------------------------------------------
+
+## 🧩 Features
+
+-   🔍 Real-time music search\
+-   🎵 Instant streaming\
+-   ⏯️ Play / Pause / Seek controls\
+-   🔁 Smart autoplay\
+-   📱 Fully responsive\
+-   ⚡ Fast loading (Vercel optimized)\
+-   🎨 Minimal UI
+
+------------------------------------------------------------------------
+
+## 🏗️ Architecture
+
+``` mermaid
+graph TD
+A[User Browser] --> B[Frontend App]
+B --> C[Music API]
+C --> B
+B --> D[Audio Player Engine]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+------------------------------------------------------------------------
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    needle-mp3/
+    │── public/
+    │── src/
+    │   ├── components/
+    │   ├── pages/
+    │   ├── services/
+    │   └── utils/
+    │── README.md
 
-## Learn More
+------------------------------------------------------------------------
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+``` bash
+git clone https://github.com/TCRGedi/needle-mp3.git
+cd needle-mp3
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+------------------------------------------------------------------------
 
-## Deploy on Vercel
+## 🔐 Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    VITE_API_URL=your_api_url (optional)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+------------------------------------------------------------------------
+
+## 📌 Roadmap
+
+-   ❤️ Favorites
+-   📂 Playlists
+-   🔐 Auth
+-   🎧 Offline mode
+-   🌙 Dark mode
+
+------------------------------------------------------------------------
+
+## ⚠️ Disclaimer
+
+This project is for educational purposes only.
+
+------------------------------------------------------------------------
+
+## 👨‍💻 Author
+
+Sudhev KS\
+https://github.com/TCRGedi420
+
+------------------------------------------------------------------------
+
+## ⭐ Support
+
+Give a star ⭐ if you like this project!
