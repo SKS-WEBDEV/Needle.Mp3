@@ -30,7 +30,7 @@ export default function MainLayout({ children }) {
 
                     {/* Replace text with GIF */}
                 <img
-                src="https://drive.usercontent.google.com/download?id=1fIkpoB9-JdVNfGAZ8Z_xbAnFD_9tCbog"
+                src="https://res.cloudinary.com/dgwrti2qs/image/upload/v1774345919/2026-03-24-NEEDLE-MP3_fttq1y.gif"
                 alt="Needle Logo"
                 className="mobile-brand-logo"
                 />
