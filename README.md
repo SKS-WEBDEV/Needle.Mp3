@@ -1,10 +1,10 @@
 # 🎧 Needle MP3
 
 ![GitHub Repo
-stars](https://img.shields.io/github/stars/your-username/needle-mp3?style=social)
+stars](https://img.shields.io/github/stars/SKS-WEBDEV/needle-mp3?style=social)
 ![GitHub
-forks](https://img.shields.io/github/forks/your-username/needle-mp3?style=social)
-![License](https://img.shields.io/github/license/your-username/needle-mp3)
+forks](https://img.shields.io/github/forks/SKS-WEBDEV/needle-mp3?style=social)
+![License](https://img.shields.io/github/license/SKS-WEBDEV/needle-mp3)
 ![Vercel](https://img.shields.io/badge/Deployed-Vercel-black)
 
 ------------------------------------------------------------------------
@@ -96,7 +96,7 @@ This project is for educational purposes only.
 ## 👨‍💻 Author
 
 Sudhev KS\
-https://github.com/TCRGedi420
+https://github.com/SKS-WEBDEV
 
 ------------------------------------------------------------------------
 
