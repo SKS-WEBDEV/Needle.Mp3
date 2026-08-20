@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
+import ffmpegPath from 'ffmpeg-static';
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
-// Configure ffmpeg path explicitly
-if (ffmpegStatic) {
-    ffmpeg.setFfmpegPath(ffmpegStatic);
+// Set the binary path explicitly
+if (ffmpegPath) {
+  ffmpeg.setFfmpegPath(ffmpegPath);
 }
+
+export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 const decodeHtml = (str) => {
     if (!str) return '';
