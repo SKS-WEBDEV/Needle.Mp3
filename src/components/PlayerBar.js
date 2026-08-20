@@ -14,6 +14,7 @@ function formatTime(seconds) {
 export default function PlayerBar({ onExpand }) {
     const { currentSong, isPlaying, setIsPlaying, nextSong, prevSong, volume, setVolume, progress, duration, seek } = usePlayer();
     const [localSeek, setLocalSeek] = useState(null);
+    const [downloadState, setDownloadState] = useState(null);
 
     if (!currentSong) return null;
 
@@ -29,8 +30,48 @@ export default function PlayerBar({ onExpand }) {
     const handleDownload = (e) => {
         e.stopPropagation();
         if (!currentSong) return;
-        const url = `/api/download?id=${currentSong.id}`;
-        window.location.href = url;
+        setDownloadState({
+            songName: currentSong.name,
+            progress: 0,
+            status: 'downloading'
+        });
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `/api/download?id=${currentSong.id}`, true);
+        xhr.responseType = 'blob';
+        xhr.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percent = Math.round((event.loaded / event.total) * 100);
+                setDownloadState(prev => prev ? { ...prev, progress: percent } : null);
+            }
+        };
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                const blob = xhr.response;
+                const disposition = xhr.getResponseHeader('Content-Disposition');
+                let filename = `${currentSong.name}.mp3`;
+                if (disposition && disposition.includes('filename=')) {
+                    const match = disposition.match(/filename="?([^"]+)"?/);
+                    if (match && match[1]) filename = decodeURIComponent(match[1]);
+                }
+                // Save file to disk
+                const blobUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(blobUrl);
+                setDownloadState(prev => prev ? { ...prev, progress: 100, status: 'completed' } : null);
+                setTimeout(() => setDownloadState(null), 3000);
+            } else {
+                setDownloadState({ songName: currentSong.name, status: 'error', error: 'Failed to process audio' });
+            }
+        };
+        xhr.onerror = () => {
+            setDownloadState({ songName: currentSong.name, status: 'error', error: 'Network error' });
+        };
+        xhr.send();
     };
 
     const decodeHtml = (html) => {
