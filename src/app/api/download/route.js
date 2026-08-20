@@ -1,14 +1,5 @@
 import { NextResponse } from 'next/server';
-import ffmpegPath from 'ffmpeg-static';
-import ffmpeg from 'fluent-ffmpeg';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
-
-// Set the binary path explicitly
-if (ffmpegPath) {
-  ffmpeg.setFfmpegPath(ffmpegPath);
-}
+import NodeID3 from 'node-id3';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -31,12 +22,6 @@ export async function GET(request) {
         return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
     }
 
-    // Cleanup paths
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, `${id}_raw.mp3`);
-    const outputFilePath = path.join(tempDir, `${id}_tagged.mp3`);
-    let imagePath = null;
-
     try {
         // 1. Fetch Song Details
         const res = await fetch(`https://zylaes-saavn.vercel.app/api/songs/${id}`);
@@ -53,78 +38,48 @@ export async function GET(request) {
         const safeName = decodeHtml(song.name);
         const safeArtist = decodeHtml(song.artists?.primary?.map(a => a.name).join(', ') || 'Unknown');
         const safeAlbum = decodeHtml(song.album?.name || '');
-
-        const tags = {
-            title: safeName,
-            artist: safeArtist,
-            album: safeAlbum,
-            year: song.year,
-            image: song.image?.at(-1)?.url // High res image
-        };
-
-        // Sanitize filename for OS
         const filename = `${safeName} - ${safeArtist}.mp3`.replace(/[<>:"/\\|?*]/g, '');
 
         console.log(`Processing: ${filename}`);
 
-        // rest of logic...
-
-        // Download raw file
+        // 4. Download Audio Stream into Buffer
         const audioRes = await fetch(downloadUrl);
         if (!audioRes.ok) throw new Error('Failed to fetch audio stream');
-        const buffer = await audioRes.arrayBuffer();
-        fs.writeFileSync(tempFilePath, Buffer.from(buffer));
+        const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
 
-        // Download Cover Art
-        if (tags.image) {
+        // 5. Download Cover Art Image into Buffer
+        let imageBuffer = null;
+        const imageUrl = song.image?.at(-1)?.url;
+        if (imageUrl) {
             try {
-                const imgRes = await fetch(tags.image);
+                const imgRes = await fetch(imageUrl);
                 if (imgRes.ok) {
-                    const imgBuf = await imgRes.arrayBuffer();
-                    imagePath = path.join(tempDir, `${id}.jpg`);
-                    fs.writeFileSync(imagePath, Buffer.from(imgBuf));
+                    imageBuffer = Buffer.from(await imgRes.arrayBuffer());
                 }
-            } catch (e) { console.warn("Image fetch failed", e); }
+            } catch (e) {
+                console.warn("Image fetch failed", e);
+            }
         }
 
-        // Process with FFMPEG
-        await new Promise((resolve, reject) => {
-            let command = ffmpeg(tempFilePath);
+        // 6. Attach ID3 Tags & Cover Art in Memory using pure JS
+        const tags = {
+            title: safeName,
+            artist: safeArtist,
+            album: safeAlbum,
+            year: song.year ? String(song.year) : undefined,
+            ...(imageBuffer && {
+                APIC: {
+                    type: { id: 3, name: 'front cover' },
+                    mime: 'image/jpeg',
+                    description: 'Cover',
+                    imageBuffer: imageBuffer
+                }
+            })
+        };
 
-            // Add metadata
-            command
-                .outputOptions('-id3v2_version', '3')
-                .outputOptions('-metadata', `title=${tags.title}`)
-                .outputOptions('-metadata', `artist=${tags.artist}`)
-                .outputOptions('-metadata', `album=${tags.album}`)
-                .outputOptions('-metadata', `date=${tags.year || ''}`);
+        const taggedBuffer = NodeID3.write(tags, audioBuffer);
 
-            // Add cover art
-            if (imagePath && fs.existsSync(imagePath)) {
-                command
-                    .input(imagePath)
-                    .outputOptions('-map', '0:0')
-                    .outputOptions('-map', '1:0')
-                    .outputOptions('-c', 'copy')
-                    .outputOptions('-metadata:s:v', 'title="Album cover"')
-                    .outputOptions('-metadata:s:v', 'comment="Cover (front)"');
-            } else {
-                command.audioCodec('copy');
-            }
-
-            command
-                .save(outputFilePath)
-                .on('end', resolve)
-                .on('error', (err) => {
-                    console.error('FFMPEG Error:', err);
-                    reject(err);
-                });
-        });
-
-        // Read back
-        const taggedBuffer = fs.readFileSync(outputFilePath);
-
-        // Return
+        // 7. Return Tagged MP3 Response directly
         return new Response(taggedBuffer, {
             headers: {
                 'Content-Type': 'audio/mpeg',
@@ -135,12 +90,5 @@ export async function GET(request) {
     } catch (error) {
         console.error("Download Handler Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
-    } finally {
-        // Cleanup
-        try {
-            if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-            if (fs.existsSync(outputFilePath)) fs.unlinkSync(outputFilePath);
-            if (imagePath && fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
-        } catch (e) { console.error("Cleanup error", e); }
     }
 }
