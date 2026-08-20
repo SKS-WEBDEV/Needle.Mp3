@@ -30,7 +30,7 @@ export async function GET(request) {
 
         if (!song) throw new Error('Song not found');
 
-        // 2. Get highest quality URL
+        // 2. Get highest quality download URL
         const downloadUrl = song.downloadUrl?.at(-1)?.url;
         if (!downloadUrl) throw new Error('No download URL found');
 
@@ -40,8 +40,6 @@ export async function GET(request) {
         const safeAlbum = decodeHtml(song.album?.name || '');
         const filename = `${safeName} - ${safeArtist}.mp3`.replace(/[<>:"/\\|?*]/g, '');
 
-        console.log(`Processing: ${filename}`);
-
         // 4. Download Audio Stream into Buffer
         const audioRes = await fetch(downloadUrl);
         if (!audioRes.ok) throw new Error('Failed to fetch audio stream');
@@ -49,11 +47,14 @@ export async function GET(request) {
 
         // 5. Download Cover Art Image into Buffer
         let imageBuffer = null;
+        let imageMime = 'image/jpeg';
         const imageUrl = song.image?.at(-1)?.url;
+
         if (imageUrl) {
             try {
                 const imgRes = await fetch(imageUrl);
                 if (imgRes.ok) {
+                    imageMime = imgRes.headers.get('content-type') || 'image/jpeg';
                     imageBuffer = Buffer.from(await imgRes.arrayBuffer());
                 }
             } catch (e) {
@@ -61,25 +62,30 @@ export async function GET(request) {
             }
         }
 
-        // 6. Attach ID3 Tags & Cover Art in Memory using pure JS
+        // 6. Build ID3 Tags with Cover Art + Comment
         const tags = {
             title: safeName,
             artist: safeArtist,
             album: safeAlbum,
             year: song.year ? String(song.year) : undefined,
+            comment: {
+                language: 'eng',
+                text: 'Downloaded from NeedleMP3'
+            },
             ...(imageBuffer && {
                 APIC: {
                     type: { id: 3, name: 'front cover' },
-                    mime: 'image/jpeg',
+                    mime: imageMime,
                     description: 'Cover',
                     imageBuffer: imageBuffer
                 }
             })
         };
 
+        // Write tags to MP3 Buffer
         const taggedBuffer = NodeID3.write(tags, audioBuffer);
 
-        // 7. Return Tagged MP3 Response directly
+        // 7. Return Tagged MP3
         return new Response(taggedBuffer, {
             headers: {
                 'Content-Type': 'audio/mpeg',
