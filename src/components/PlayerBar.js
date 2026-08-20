@@ -3,6 +3,7 @@ import { usePlayer } from '@/context/PlayerContext';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Maximize2, Download } from 'lucide-react';
 import * as Slider from '@radix-ui/react-slider';
 import { useState } from 'react';
+import DownloadProgress from './DownloadProgress';
 
 function formatTime(seconds) {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -30,30 +31,36 @@ export default function PlayerBar({ onExpand }) {
     const handleDownload = (e) => {
         e.stopPropagation();
         if (!currentSong) return;
+
         setDownloadState({
             songName: currentSong.name,
             progress: 0,
             status: 'downloading'
         });
+
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `/api/download?id=${currentSong.id}`, true);
         xhr.responseType = 'blob';
+
         xhr.onprogress = (event) => {
             if (event.lengthComputable) {
                 const percent = Math.round((event.loaded / event.total) * 100);
                 setDownloadState(prev => prev ? { ...prev, progress: percent } : null);
             }
         };
+
         xhr.onload = () => {
             if (xhr.status === 200) {
                 const blob = xhr.response;
                 const disposition = xhr.getResponseHeader('Content-Disposition');
                 let filename = `${currentSong.name}.mp3`;
+
                 if (disposition && disposition.includes('filename=')) {
                     const match = disposition.match(/filename="?([^"]+)"?/);
                     if (match && match[1]) filename = decodeURIComponent(match[1]);
                 }
-                // Save file to disk
+
+                // Create blob download link
                 const blobUrl = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
@@ -62,15 +69,18 @@ export default function PlayerBar({ onExpand }) {
                 a.click();
                 a.remove();
                 URL.revokeObjectURL(blobUrl);
+
                 setDownloadState(prev => prev ? { ...prev, progress: 100, status: 'completed' } : null);
                 setTimeout(() => setDownloadState(null), 3000);
             } else {
-                setDownloadState({ songName: currentSong.name, status: 'error', error: 'Failed to process audio' });
+                setDownloadState({ songName: currentSong.name, status: 'error', error: 'Download failed' });
             }
         };
+
         xhr.onerror = () => {
             setDownloadState({ songName: currentSong.name, status: 'error', error: 'Network error' });
         };
+
         xhr.send();
     };
 
@@ -166,6 +176,9 @@ export default function PlayerBar({ onExpand }) {
                     </Slider.Root>
                 </div>
             </div>
+
+            {/* Floating Download Progress Card */}
+            <DownloadProgress downloadState={downloadState} onClose={() => setDownloadState(null)} />
 
         </div>
     );
